@@ -4,5 +4,6 @@ export const config = {
 
 export default async (request) => {
   const req = await request.json();
-  return new Response(JSON.stringify(req));
+  console.log(req);
+  return new Response(req);
 };
