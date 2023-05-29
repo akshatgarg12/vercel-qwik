@@ -3,7 +3,6 @@ export const config = {
 };
 
 export default async (request) => {
-  const req = await request.json();
-  console.log(req);
-  return new Response(req);
+  console.log(request.headers);
+  return new Response(`hello ${request.url}`);
 };
