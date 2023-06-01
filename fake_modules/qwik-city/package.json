@@ -48,6 +48,10 @@
       "import": "./lib/adapters/vercel-edge/vite/index.mjs",
       "require": "./lib/adapters/vercel-edge/vite/index.cjs"
     },
+    "./adapters/vercel/vite": {
+      "import": "./lib/adapters/vercel/vite/index.mjs",
+      "require": "./lib/adapters/vercel/vite/index.cjs"
+    },
     "./middleware/azure-swa": {
       "import": "./lib/middleware/azure-swa/index.mjs"
     },
