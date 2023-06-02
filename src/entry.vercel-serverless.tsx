@@ -5,7 +5,7 @@ import render from "./entry.ssr";
 import {
   getRequest,
   setResponse,
-} from "../fake_modules/qwik-city/middleware/vercel-edge/lib/vercel";
+} from "../fake_modules/qwik-city/middleware/vercel-edge/lib";
 
 const DATA_SUFFIX = "/__data.json";
 type IncomingMessage = import("http").IncomingMessage;
