@@ -1,29 +1,40 @@
 // packages/qwik-city/middleware/vercel-edge/index.ts
 import {
   mergeHeadersCookies,
-  requestHandler
+  requestHandler,
 } from "../request-handler/index.mjs";
 import { getNotFound } from "@qwik-city-not-found-paths";
 import { isStaticPath } from "@qwik-city-static-paths";
-import { _deserializeData, _serializeData, _verifySerializable } from "@builder.io/qwik";
+import {
+  _deserializeData,
+  _serializeData,
+  _verifySerializable,
+} from "@builder.io/qwik";
 import { setServerPlatform } from "@builder.io/qwik/server";
+import { getRequest, setResponse } from "./lib";
+
 function createQwikCity(opts) {
   const qwikSerializer = {
     _deserializeData,
     _serializeData,
-    _verifySerializable
+    _verifySerializable,
   };
   if (opts.manifest) {
     setServerPlatform(opts.manifest);
   }
+  let env = opts.env;
+  if (!env || (env !== "edge" && env !== "serverless")) {
+    env = "edge";
+  }
+
   async function onVercelEdgeRequest(request) {
     try {
       const url = new URL(request.url);
       if (isStaticPath(request.method, url)) {
         return new Response(null, {
           headers: {
-            "x-middleware-next": "1"
-          }
+            "x-middleware-next": "1",
+          },
         });
       }
       const serverRequestEv = {
@@ -34,20 +45,24 @@ function createQwikCity(opts) {
         env: {
           get(key) {
             return process.env[key];
-          }
+          },
         },
         getWritableStream: (status, headers, cookies, resolve) => {
           const { readable, writable } = new TransformStream();
           const response = new Response(readable, {
             status,
-            headers: mergeHeadersCookies(headers, cookies)
+            headers: mergeHeadersCookies(headers, cookies),
           });
           resolve(response);
           return writable;
         },
-        platform: {}
+        platform: {},
       };
-      const handledResponse = await requestHandler(serverRequestEv, opts, qwikSerializer);
+      const handledResponse = await requestHandler(
+        serverRequestEv,
+        opts,
+        qwikSerializer
+      );
       if (handledResponse) {
         handledResponse.completion.then((v) => {
           if (v) {
@@ -62,18 +77,53 @@ function createQwikCity(opts) {
       const notFoundHtml = getNotFound(url.pathname);
       return new Response(notFoundHtml, {
         status: 404,
-        headers: { "Content-Type": "text/html; charset=utf-8", "X-Not-Found": url.pathname }
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "X-Not-Found": url.pathname,
+        },
       });
     } catch (e) {
       console.error(e);
       return new Response(String(e || "Error"), {
         status: 500,
-        headers: { "Content-Type": "text/plain; charset=utf-8", "X-Error": "vercel-edge" }
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+          "X-Error": "vercel-edge",
+        },
       });
     }
   }
-  return onVercelEdgeRequest;
+  async function onVercelServerlessRequest(req, res) {
+    if (req.url) {
+      const [_path, search] = req.url.split("?");
+      const params = new URLSearchParams(search);
+      let pathname = params.get("__pathname");
+
+      if (pathname) {
+        params.delete("__pathname");
+        pathname = pathname.replace(/\/+/g, "/");
+        req.url = `${pathname}?${params}`;
+      }
+    }
+    let request;
+    try {
+      request = await getRequest({
+        base: `https://${req.headers.host}`,
+        request: req,
+      });
+    } catch (err) {
+      res.statusCode = err.status || 400;
+      return res.end("Invalid request body");
+    }
+    const response = await onVercelEdgeRequest(request);
+
+    setResponse(res, response);
+  }
+
+  if (env === "edge") {
+    return onVercelEdgeRequest;
+  } else {
+    return onVercelServerlessRequest;
+  }
 }
-export {
-  createQwikCity
-};
+export { createQwikCity };

@@ -7,17 +7,12 @@ export default extendConfig(baseConfig, () => {
     build: {
       ssr: true,
       rollupOptions: {
-        input: [
-          "src/entry.vercel-edge.tsx",
-          "src/entry.vercel-serverless.tsx",
-          "@qwik-city-plan",
-        ],
+        input: ["src/entry.vercel-edge.tsx", "@qwik-city-plan"],
       },
       outDir: ".vercel/output/functions/_qwik-city.func",
     },
     plugins: [
       vercelEdgeAdapter({
-        vcConfigEntryPoint: "entry.vercel-serverless.js",
         vcEnv: "serverless",
       }),
     ],
