@@ -6,6 +6,7 @@
   },
   "private": true,
   "scripts": {
+    "prebuild": "cd fake_modules/qwik-city && yarn && yarn build && cd ../..",
     "build": "qwik build",
     "build.client": "vite build",
     "build.preview": "vite build --ssr src/entry.preview.tsx",
