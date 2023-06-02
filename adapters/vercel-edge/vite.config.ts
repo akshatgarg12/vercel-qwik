@@ -1,4 +1,4 @@
-import { vercelEdgeAdapter } from "../../fake_modules/qwik-city/adapters/vercel-edge/vite";
+import { vercelEdgeAdapter } from "@builder.io/qwik-city-new/adapters/vercel-edge/vite";
 import { extendConfig } from "@builder.io/qwik-city/vite";
 import baseConfig from "../../vite.config";
 
