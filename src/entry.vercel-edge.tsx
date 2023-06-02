@@ -10,7 +10,7 @@
 import {
   createQwikCity,
   type PlatformVercel,
-} from "../fake_modules/qwik-city/middleware/vercel-edge";
+} from "@builder.io/qwik-city-new/middleware/vercel-edge";
 import qwikCityPlan from "@qwik-city-plan";
 import { manifest } from "@qwik-client-manifest";
 import render from "./entry.ssr";
@@ -19,6 +19,6 @@ declare global {
   interface QwikCityPlatform extends PlatformVercel {}
 }
 
-const env = "serverless";
+const env = "edge";
 
 export default createQwikCity({ render, qwikCityPlan, manifest, env });

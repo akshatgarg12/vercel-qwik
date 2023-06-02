@@ -120,10 +120,6 @@ function createQwikCity(opts) {
     setResponse(res, response);
   }
 
-  if (env === "edge") {
-    return onVercelEdgeRequest;
-  } else {
-    return onVercelServerlessRequest;
-  }
+  return env === "edge" ? onVercelEdgeRequest : onVercelServerlessRequest;
 }
 export { createQwikCity };

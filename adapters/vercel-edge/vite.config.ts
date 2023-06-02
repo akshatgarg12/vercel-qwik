@@ -13,7 +13,7 @@ export default extendConfig(baseConfig, () => {
     },
     plugins: [
       vercelEdgeAdapter({
-        vcEnv: "serverless",
+        vcEnv: "edge",
       }),
     ],
   };
