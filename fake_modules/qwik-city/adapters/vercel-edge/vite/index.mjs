@@ -6,20 +6,25 @@ function vercelEdgeAdapter(opts = {}) {
   var _a;
   return viteAdapter({
     name: "vercel-edge",
-    origin: ((_a = process == null ? void 0 : process.env) == null ? void 0 : _a.VERCEL_URL) || "https://yoursitename.vercel.app",
+    origin:
+      ((_a = process == null ? void 0 : process.env) == null
+        ? void 0
+        : _a.VERCEL_URL) || "https://yoursitename.vercel.app",
     ssg: opts.ssg,
     staticPaths: opts.staticPaths,
     cleanStaticGenerated: true,
     config(config) {
       var _a2;
-      const outDir = ((_a2 = config.build) == null ? void 0 : _a2.outDir) || join(".vercel", "output", "functions", "_qwik-city.func");
+      const outDir =
+        ((_a2 = config.build) == null ? void 0 : _a2.outDir) ||
+        join(".vercel", "output", "functions", "_qwik-city.func");
       return {
         resolve: {
-          conditions: ["webworker", "worker"]
+          conditions: ["webworker", "worker"],
         },
         ssr: {
           target: "webworker",
-          noExternal: true
+          noExternal: true,
         },
         build: {
           ssr: true,
@@ -27,14 +32,19 @@ function vercelEdgeAdapter(opts = {}) {
           rollupOptions: {
             output: {
               format: "es",
-              hoistTransitiveImports: false
-            }
-          }
+              hoistTransitiveImports: false,
+            },
+          },
         },
-        publicDir: false
+        publicDir: false,
       };
     },
-    async generate({ clientPublicOutDir, serverOutDir, basePathname, outputEntries }) {
+    async generate({
+      clientPublicOutDir,
+      serverOutDir,
+      basePathname,
+      outputEntries,
+    }) {
       const vercelOutputDir = getParentDir(serverOutDir, "output");
       if (opts.outputConfig !== false) {
         const vercelOutputConfig = {
@@ -42,10 +52,10 @@ function vercelEdgeAdapter(opts = {}) {
             { handle: "filesystem" },
             {
               src: basePathname + ".*",
-              dest: "/_qwik-city"
-            }
+              dest: "/_qwik-city",
+            },
           ],
-          version: 3
+          version: 3,
         };
         await fs.promises.writeFile(
           join(vercelOutputDir, "config.json"),
@@ -62,22 +72,39 @@ function vercelEdgeAdapter(opts = {}) {
       }
       const vcConfigPath = join(serverOutDir, ".vc-config.json");
       const vcConfig = {
-        runtime: "edge",
-        entrypoint,
-        envVarsInUse: opts.vcConfigEnvVarsInUse
+        edge: {
+          runtime: "edge",
+          entrypoint,
+          envVarsInUse: opts.vcConfigEnvVarsInUse,
+        },
+        serverless: {
+          runtime: "nodejs18.x",
+          handler: entrypoint,
+          maxDuration: 60,
+          launcherType: "Nodejs",
+          shouldAddSourcemapSupport: true,
+        },
       };
-      await fs.promises.writeFile(vcConfigPath, JSON.stringify(vcConfig, null, 2));
+      let env = opts.vcEnv;
+      if (!env || (env !== "edge" && env !== "serverless")) {
+        env = "edge";
+      }
+
+      await fs.promises.writeFile(
+        vcConfigPath,
+        JSON.stringify(vcConfig[env], null, 2)
+      );
       let vercelStaticDir = join(vercelOutputDir, "static");
-      const basePathnameParts = basePathname.split("/").filter((p) => p.length > 0);
+      const basePathnameParts = basePathname
+        .split("/")
+        .filter((p) => p.length > 0);
       if (basePathnameParts.length > 0) {
         vercelStaticDir = join(vercelStaticDir, ...basePathnameParts);
       }
       await fs.promises.rm(vercelStaticDir, { recursive: true, force: true });
       await fs.promises.mkdir(dirname(vercelStaticDir), { recursive: true });
       await fs.promises.rename(clientPublicOutDir, vercelStaticDir);
-    }
+    },
   });
 }
-export {
-  vercelEdgeAdapter
-};
+export { vercelEdgeAdapter };

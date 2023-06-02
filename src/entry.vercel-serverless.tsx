@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/consistent-type-imports */
-import { createQwikCity } from "../fake_modules/qwik-city/middleware/vercel";
+import { createQwikCity } from "../fake_modules/qwik-city/middleware/vercel-edge";
 import qwikCityPlan from "@qwik-city-plan";
 import render from "./entry.ssr";
 import {
   getRequest,
   setResponse,
-} from "../fake_modules/qwik-city/middleware/vercel/lib/vercel";
+} from "../fake_modules/qwik-city/middleware/vercel-edge/lib/vercel";
 
 const DATA_SUFFIX = "/__data.json";
 type IncomingMessage = import("http").IncomingMessage;
